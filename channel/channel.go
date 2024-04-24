@@ -1,6 +1,9 @@
 package channel
 
-import "fmt"
+import (
+	"fmt"
+	"time"
+)
 
 func CheckChannelIsAlive() {
 	myChan := make(chan int)
@@ -20,4 +23,21 @@ func ReceiveAndSend(c chan int) {
 	fmt.Printf("Received: %d\n", <-c)
 	fmt.Printf("Sending 2...\n")
 	c <- 2
+}
+
+func OtherExample() {
+	myChan := make(chan int)
+
+	go func() {
+		for i := 1; i <= 10; i++ {
+			myChan <- i
+			time.Sleep(time.Second)
+		}
+	}()
+
+	for i := 1; i <= 10; i++ {
+		fmt.Println(<-myChan)
+
+	}
+
 }
