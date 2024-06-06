@@ -1,4 +1,4 @@
-module test
+module s3
 
 go 1.22.1
 
