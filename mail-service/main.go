@@ -1,56 +1,79 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
-	"github.com/sendgrid/sendgrid-go"
-	"github.com/sendgrid/sendgrid-go/helpers/mail"
-	"github.com/spf13/viper"
+	"github.com/joho/godotenv"
+	"html/template"
 	"log"
+	"os"
 )
 
-func main() {
-	viper.SetConfigName(".env") // name of config file (without extension)
-	viper.SetConfigType("env")  // REQUIRED if the config file does not have the extension in the name
-	viper.AddConfigPath(".")    // path to look for the config file in
+type Test struct {
+	Name string
+}
 
-	err := viper.ReadInConfig() // Find and read the config file
-	if err != nil {             // Handle errors reading the config file
-		panic(fmt.Errorf("Fatal error config file: %s \n", err))
+func SendEmail() {
+
+	data := Test{
+		Name: "Minh Nha",
 	}
 
-	// Mail
-
-	from := mail.NewEmail("Example User", "test@example.com")
-	subject := "Hello World from the SendGrid Go Library"
-	to := mail.NewEmail("Example User", "minhnha@smartosc.com")
-	plainTextContent := "Hello, Email!"
-	htmlContent := "<strong>Hello, Email!</strong>"
-	message := mail.NewSingleEmail(from, subject, to, plainTextContent, htmlContent)
-
-	// Read the file
-	//data, err := ioutil.ReadFile("/path/to/your/file.txt")
-	//if err != nil {
-	//	log.Fatal(err)
-	//}
-
-	// Create a new attachment
-	attachment := mail.NewAttachment()
-	attachment.SetContent(string("YXNkYXNkc2Fkc2FkYXNkYXNkYXNk"))
-	attachment.SetType("text/plain")
-	attachment.SetFilename("file.txt")
-	attachment.SetDisposition("attachment")
-	attachment.SetContentID("Example Content ID")
-
-	// Add the attachment to the message
-	message.AddAttachment(attachment)
-
-	client := sendgrid.NewSendClient(viper.GetString("SENDGRID_API_KEY"))
-	response, err := client.Send(message)
+	content, err := os.ReadFile("test.html")
 	if err != nil {
 		log.Fatal(err)
-	} else {
-		log.Println(response.StatusCode)
-		log.Println(response.Body)
-		log.Println(response.Headers)
 	}
+
+	// Convert the byte slice to a string
+	htmlContent := string(content)
+
+	fmt.Println("aaaaaaaaaaa", htmlContent)
+
+	//tmpl, err := template.New("test").Parse(htmlContent)
+	tmpl, err := template.ParseFiles("test.html")
+
+	if err != nil {
+		fmt.Println("Error parsing template", err)
+	}
+
+	var buf bytes.Buffer
+
+	err = tmpl.Execute(&buf, data)
+	if err != nil {
+		fmt.Println("Error parsing template", err)
+	}
+
+	//err = tmpl.Execute(&buf, data1)
+
+	fmt.Println("aaaaaaaaa", buf.String())
+
+	err = godotenv.Load(".env")
+
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
+
+	//from := mail.NewEmail("Example User", "test@example.com")
+	//subject := "Sending with SendGrid is Fun"
+	//to := mail.NewEmail("minhnha", "minhnha@smartosc.com")
+	//plainTextContent := "and easy to do anywhere, even with Go"
+	//
+	//message := mail.NewSingleEmail(from, subject, to, plainTextContent, buf.String())
+	//
+	//key := os.Getenv("SENDGRID_API_KEY")
+	//fmt.Println(key)
+	//
+	//client := sendgrid.NewSendClient(key)
+	//response, err := client.Send(message)
+	//if err != nil {
+	//	log.Println(err)
+	//} else {
+	//	fmt.Println(response.StatusCode)
+	//	fmt.Println(response.Body)
+	//	fmt.Println(response.Headers)
+	//}
+}
+
+func main() {
+	SendEmail()
 }
